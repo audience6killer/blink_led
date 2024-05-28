@@ -24,6 +24,8 @@
 
 #include "http_server.h"
 
+#include "gps_app.h"
+
 
 // Tag used for ESP serial console messages
 static const char TAG [] = "wifi_app";
@@ -247,6 +249,8 @@ static void wifi_app_task(void *pvParameters)
 					ESP_LOGI(TAG, "WIFI_APP_MSG_START_HTTP_SERVER");
 
 					http_server_start();
+
+					//gps_task_start();
 					//rgb_led_http_server_started();
 					break;
 

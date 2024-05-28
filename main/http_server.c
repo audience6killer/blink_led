@@ -18,6 +18,7 @@
 #include "http_server.h"
 #include "tasks_common.h"
 #include "wifi_app.h"
+#include "gps_app.h"
 
 static const char tag[] = "http_server";
 
@@ -38,14 +39,13 @@ static QueueHandle_t http_server_monitor_queue_handle;
 
 /**
  * @brief ESP32 timer configuration passed to esp_timer_create
- * 
+ *
  */
 const esp_timer_create_args_t fw_update_reset_args = {
     .callback = &http_server_update_reset_callback,
     .arg = NULL,
     .dispatch_method = ESP_TIMER_TASK,
-    .name = "fw_update_reset"
-};
+    .name = "fw_update_reset"};
 esp_timer_handle_t fw_update_reset;
 
 // Embed files
@@ -64,7 +64,7 @@ extern const uint8_t index_html_end[] asm("_binary_webpage_index_html_end");*/
 /**
  * @brief Checks the g_fw_status and creates the fw_update_reset timer
  * if g_fw_update_status is true.
- * 
+ *
  */
 static void http_server_fw_update_reset_timer(void)
 {
@@ -225,9 +225,8 @@ esp_err_t http_server_ota_update_handler(httpd_req_t *req)
             char *body_start_p = strstr(ota_buff, "\r\n\r\n") + 4;
             int body_part_len = recv_len - (body_start_p - ota_buff);
 
-            
-            //printf("Received %s\n", ota_buff);
-            //printf("The body part len is: %d\n", body_part_len);
+            // printf("Received %s\n", ota_buff);
+            // printf("The body part len is: %d\n", body_part_len);
 
             ESP_LOGI(tag, "http_server_OTA_update_handled: OTA file size %d\r\n", content_length);
 
@@ -254,7 +253,7 @@ esp_err_t http_server_ota_update_handler(httpd_req_t *req)
 
     } while (recv_len > 0 && content_received < content_length);
 
-    if(esp_ota_end(ota_handle) == ESP_OK)
+    if (esp_ota_end(ota_handle) == ESP_OK)
     {
         // Lets update the partition
         if (esp_ota_set_boot_partition(update_partition) == ESP_OK)
@@ -263,7 +262,8 @@ esp_err_t http_server_ota_update_handler(httpd_req_t *req)
             ESP_LOGI(tag, "http_server_OTA_update_handler: Next boot partition subtype %d at offset 0x0%x", (*boot_partition).subtype, (*boot_partition).address);
             flash_successful = true;
         }
-        else{
+        else
+        {
             ESP_LOGI(tag, "http_server_ota_update_handler: Flashed error!!");
         }
     }
@@ -286,14 +286,14 @@ esp_err_t http_server_ota_update_handler(httpd_req_t *req)
 }
 
 /**
- * @brief OTA status responds with the firmware update status after the OTA 
- * update is started and responds with the compile time/date when the page is 
+ * @brief OTA status responds with the firmware update status after the OTA
+ * update is started and responds with the compile time/date when the page is
  * first requested
- * 
+ *
  * @param req HTTP request for which the url needs to be handled
  * @return esp_err_t ESP_OK
  */
-esp_err_t http_server_ota_status_handler(httpd_req_t* req)
+esp_err_t http_server_ota_status_handler(httpd_req_t *req)
 {
     char otaJSON[100];
 
@@ -301,7 +301,7 @@ esp_err_t http_server_ota_status_handler(httpd_req_t* req)
 
     sprintf(otaJSON, "{\"ota_update_status\":%d,\"compile_time\":\"%s\",\"compile_date\":\"%s\"}", g_fw_update_status, __TIME__, __DATE__);
 
-    //ESP_LOGI(tag, "{\"ota_update_status\":%d,\"compile_time\":\"%s\",\"compile_date\":\"%s\"}", g_fw_update_status, __TIME__, __DATE__);
+    // ESP_LOGI(tag, "{\"ota_update_status\":%d,\"compile_time\":\"%s\",\"compile_date\":\"%s\"}", g_fw_update_status, __TIME__, __DATE__);
 
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, otaJSON, strlen(otaJSON));
@@ -311,12 +311,12 @@ esp_err_t http_server_ota_status_handler(httpd_req_t* req)
 
 /**
  * @brief wifiConnect.json handler is invoked after connect the button is pressed
- * and handles the receiving SSID and password entered by the use 
- * 
+ * and handles the receiving SSID and password entered by the use
+ *
  * @param req HTTP request for which the uri needs to be handled.
- * @return esp_err_t 
+ * @return esp_err_t
  */
-static esp_err_t http_server_wifi_connect_json_handler(httpd_req_t* req)
+static esp_err_t http_server_wifi_connect_json_handler(httpd_req_t *req)
 {
     ESP_LOGI(tag, "/wifiConnect.json requested");
 
@@ -326,24 +326,28 @@ static esp_err_t http_server_wifi_connect_json_handler(httpd_req_t* req)
 
     // Get ssid header
     len_ssid = httpd_req_get_hdr_value_len(req, "my-connect-ssid") + 1;
-    if (len_ssid > 1){
+    if (len_ssid > 1)
+    {
         ssid_str = malloc(len_ssid);
-        if (httpd_req_get_hdr_value_str(req, "my-connect-ssid", ssid_str, len_ssid) == ESP_OK){
+        if (httpd_req_get_hdr_value_str(req, "my-connect-ssid", ssid_str, len_ssid) == ESP_OK)
+        {
             ESP_LOGI(tag, "http_server_wifi_connect_json_handler: Found header => my-connect-ssid: %s", ssid_str);
         }
-    } 
+    }
 
     // Get pwd header
     len_pass = httpd_req_get_hdr_value_len(req, "my-connect-pwd") + 1;
-    if (len_pass > 1){
+    if (len_pass > 1)
+    {
         pass_str = malloc(len_pass);
-        if (httpd_req_get_hdr_value_str(req, "my-connect-pwd", pass_str, len_pass) == ESP_OK){
+        if (httpd_req_get_hdr_value_str(req, "my-connect-pwd", pass_str, len_pass) == ESP_OK)
+        {
             ESP_LOGI(tag, "http_server_wifi_connect_json_handler: Found header => my-connect-pass: %s", pass_str);
         }
     }
 
     // Update the Wifi network configuration
-    wifi_config_t* wifi_config = wifi_app_get_wifi_config();
+    wifi_config_t *wifi_config = wifi_app_get_wifi_config();
     memset(wifi_config, 0x00, sizeof(wifi_config_t));
     memcpy((*wifi_config).sta.ssid, ssid_str, len_ssid);
     memcpy((*wifi_config).sta.password, pass_str, len_pass);
@@ -356,7 +360,7 @@ static esp_err_t http_server_wifi_connect_json_handler(httpd_req_t* req)
     return ESP_OK;
 }
 
-static esp_err_t http_server_wifi_connect_status_json_handler(httpd_req_t* req)
+static esp_err_t http_server_wifi_connect_status_json_handler(httpd_req_t *req)
 {
     ESP_LOGI(tag, "/wifiConnectedStatus requested");
 
@@ -368,16 +372,15 @@ static esp_err_t http_server_wifi_connect_status_json_handler(httpd_req_t* req)
     httpd_resp_send(req, statusJSON, strlen(statusJSON));
 
     return ESP_OK;
-
 }
 /**
- * @brief WifiConnectInfo.json handler updates the web page with 
+ * @brief WifiConnectInfo.json handler updates the web page with
  * connection information
- * 
- * @param req 
- * @return esp_err_t 
+ *
+ * @param req
+ * @return esp_err_t
  */
-static esp_err_t http_server_get_wifi_connect_info_json_handler(httpd_req_t* req)
+static esp_err_t http_server_get_wifi_connect_info_json_handler(httpd_req_t *req)
 {
     ESP_LOGI(tag, "wifi_connect_info.json requested");
 
@@ -386,21 +389,44 @@ static esp_err_t http_server_get_wifi_connect_info_json_handler(httpd_req_t* req
 
     char ip[IP4ADDR_STRLEN_MAX];
 
-    if(g_wifi_connect_status == HTTP_WIFI_STATUS_CONNECT_SUCCESSFUL)
+    if (g_wifi_connect_status == HTTP_WIFI_STATUS_CONNECT_SUCCESSFUL)
     {
         wifi_ap_record_t wifi_data;
         ESP_ERROR_CHECK(esp_wifi_sta_get_ap_info(&wifi_data));
-        char *ssid = (char*)wifi_data.ssid;
+        char *ssid = (char *)wifi_data.ssid;
 
         esp_netif_ip_info_t ip_info;
         ESP_ERROR_CHECK(esp_netif_get_ip_info(esp_netif_sta, &ip_info));
         esp_ip4addr_ntoa(&ip_info.ip, ip, IP4ADDR_STRLEN_MAX);
-        
+
         sprintf(ipInfoJson, "{\"ip\":\"%s\", \"ssid\":\"%s\"}", ip, ssid);
     }
 
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, ipInfoJson, strlen(ipInfoJson));
+
+    return ESP_OK;
+}
+
+static esp_err_t http_server_get_gps_info_json_handler(httpd_req_t *req)
+{
+    ESP_LOGI(tag, "gps_info.json requested");
+
+    char gpsInfoJSON[200];
+
+    if (g_wifi_connect_status == HTTP_WIFI_STATUS_CONNECT_SUCCESSFUL)
+    {
+        double latitude = get_latitude();
+
+        double longitude = get_longitude();
+
+        float altitude = get_altitude();
+
+        sprintf(gpsInfoJSON, "{\"latitude\":\"%.9f\", \"longitude\":\"%.9f\", \"altitude\":\"%.4f\"}", latitude, longitude, altitude);
+    }
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_send(req, gpsInfoJSON, strlen(gpsInfoJSON));
 
     return ESP_OK;
 }
@@ -507,6 +533,13 @@ static httpd_handle_t http_server_configure(void)
             .handler = http_server_get_wifi_connect_info_json_handler,
             .user_ctx = NULL};
         httpd_register_uri_handler(http_server_handle, &wifi_connect_info_json);
+
+        httpd_uri_t gps_info_json = {
+            .uri = "/gpsInfo.json",
+            .method = HTTP_POST,
+            .handler = http_server_get_gps_info_json_handler,
+            .user_ctx = NULL};
+        httpd_register_uri_handler(http_server_handle, &gps_info_json);
 
         return http_server_handle;
     }

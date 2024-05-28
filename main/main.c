@@ -158,6 +158,8 @@ esp_err_t set_pwm_duty(void)
 
 #include "wifi_app.h"
 
+#include "gps_app.h"
+
 void app_main(void)
 {
     // Initialize NVS
@@ -171,6 +173,9 @@ void app_main(void)
 
     // Start wifi app
     wifi_app_start();
+
+    // Start gps task
+    gps_task_start();
 
 }
 

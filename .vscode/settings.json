@@ -21,7 +21,8 @@
         "ledc.h": "c",
         "task.h": "c",
         "event_groups.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "esp_system.h": "c"
     },
     "cmake.configureOnOpen": false
 }

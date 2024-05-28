@@ -15,4 +15,9 @@
 #define HTTP_SERVER_MONITOR_TASK_STACK_SIZE     4096
 #define HTTP_SERVER_MONITOR_TASK_PRIORITY       3
 #define HTTP_SERVER_MONITOR_CORE_ID             0
+
+// Define GPS UART task
+#define GPS_UART_TASK_STACK_SIZE     4096
+#define GPS_UART_TASK_PRIORITY       2
+#define GPS_UART_CORE_ID             0
 #endif
